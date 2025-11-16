@@ -2,120 +2,360 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>SMS Receiver</title>
+  <title>IVAC Config Panel</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    :root { color-scheme: dark light; }
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 0; background:#0f1115; color:#e6e7ea; }
-    header { padding:16px 20px; font-size:22px; font-weight:700; background:#12141a; border-bottom:1px solid #22252e; }
-    main { max-width: 900px; margin: 0 auto; padding: 16px; }
-    .card { background:#141823; border:1px solid #232835; border-radius:14px; padding:14px 16px; margin:12px 0; display:grid; grid-template-columns: 1fr auto; gap:10px; }
-    .meta { font-size:13px; opacity:.85; }
-    .row { margin:2px 0; }
-    .text { grid-column: 1 / -1; white-space: pre-wrap; word-break: break-word; font-size:15px; }
-    .btn-del { align-self:start; padding:8px 10px; border-radius:10px; border:1px solid #3a4254; background:#1b2130; color:#f3f4f6; cursor:pointer; }
-    .btn-del:hover { background:#222a3d; }
-    .empty { opacity:.7; text-align:center; padding:40px 0; }
-    a { color:#bcd3ff; text-decoration:none; }
-
-    /* মোবাইল নম্বর হাইলাইট */
-    .to-number { font-weight:700; color:#ffd166; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0f172a;
+      color: #e5e7eb;
+      margin: 0;
+      padding: 24px;
+    }
+    .wrap {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #020617;
+      border-radius: 16px;
+      padding: 20px 24px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+      border: 1px solid #1e293b;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 20px;
+    }
+    .muted { color:#9ca3af; font-size: 12px; }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px 24px;
+    }
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 13px;
+    }
+    label span {
+      font-size: 12px;
+      color:#9ca3af;
+    }
+    input {
+      padding: 6px 8px;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      background:#020617;
+      color:#e5e7eb;
+      font-size: 13px;
+    }
+    input:focus {
+      outline: 2px solid #0ea5e9;
+      outline-offset: 1px;
+    }
+    .section-title {
+      margin-top: 16px;
+      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      border-bottom: 1px solid #1f2933;
+      padding-bottom: 4px;
+    }
+    .family-grid {
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 8px;
+    }
+    .btn-row {
+      margin-top: 16px;
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+    button {
+      border:0;
+      border-radius:999px;
+      padding:7px 16px;
+      font-size: 13px;
+      font-weight:600;
+      cursor:pointer;
+      background:#0ea5e9;
+      color:#0f172a;
+    }
+    button.secondary {
+      background:#111827;
+      color:#e5e7eb;
+      border:1px solid #374151;
+    }
+    .status {
+      font-size:12px;
+      color:#e5e7eb;
+    }
+    pre {
+      background:#020617;
+      border-radius:10px;
+      padding:10px;
+      font-size:11px;
+      max-height:220px;
+      overflow:auto;
+      border:1px solid #1f2933;
+    }
+    @media(max-width: 720px){
+      .grid-2 { grid-template-columns: 1fr; }
+      .family-grid{ grid-template-columns:1fr; }
+    }
   </style>
 </head>
 <body>
-  <header>SMS Receiver</header>
-  <main>
-    <div id="list" class="list"></div>
-    <div id="empty" class="empty" style="display:none">No messages yet.</div>
-  </main>
+  <div class="wrap">
+    <h1>IVAC Config Panel</h1>
+    <div class="muted">
+      এখানে যেসব ভ্যালু দিবে, সেগুলো Railway সার্ভারে সেভ হবে। Master Panel ব্রাউজার থেকে
+      <code>/config</code> ফেচ করে এই ডেটা নেবে।
+    </div>
+
+    <form id="cfgForm">
+      <div class="section-title">Basic</div>
+      <div class="grid-2">
+        <label class="field">
+          Mobile
+          <input id="mobile" placeholder="019xxxxxxxx" />
+        </label>
+        <label class="field">
+          Appointment Date
+          <span>(YYYY-MM-DD)</span>
+          <input id="appointment_date" placeholder="2025-11-16" />
+        </label>
+        <label class="field">
+          Go Live At (optional)
+          <span>ISO time, e.g. 2025-11-16T18:00:05+06:00</span>
+          <input id="go_live_at" placeholder="(optional)" />
+        </label>
+      </div>
+
+      <div class="section-title">Application (CONFIG.form.app)</div>
+      <div class="grid-2">
+        <label class="field">
+          highcom
+          <input id="app_highcom" placeholder="3" />
+        </label>
+        <label class="field">
+          webfile_id
+          <input id="app_webfile_id" placeholder="BGDRV9BDA830" />
+        </label>
+        <label class="field">
+          webfile_id_repeat
+          <input id="app_webfile_id_repeat" placeholder="BGDRV9BDA830" />
+        </label>
+        <label class="field">
+          ivac_id
+          <input id="app_ivac_id" placeholder="2" />
+        </label>
+        <label class="field">
+          visa_type
+          <input id="app_visa_type" placeholder="2" />
+        </label>
+        <label class="field">
+          family_count
+          <input id="app_family_count" placeholder="0" />
+        </label>
+      </div>
+
+      <div class="section-title">Family Members (CONFIG.form.personal.family)</div>
+      <div class="family-grid">
+        <!-- Member 1 -->
+        <div>
+          <div class="muted">Member 1 (key "1")</div>
+          <label class="field">
+            name
+            <input id="f1_name" placeholder="SAJJAD" />
+          </label>
+          <label class="field">
+            webfile_no
+            <input id="f1_web" placeholder="BGDDV9BDF425" />
+          </label>
+          <label class="field">
+            again_webfile_no
+            <input id="f1_web2" placeholder="BGDDV9BDF425" />
+          </label>
+        </div>
+
+        <!-- Member 2 -->
+        <div>
+          <div class="muted">Member 2 (key "2")</div>
+          <label class="field">
+            name
+            <input id="f2_name" placeholder="TAHSHIN ISLAM ABIR" />
+          </label>
+          <label class="field">
+            webfile_no
+            <input id="f2_web" placeholder="BGDDV9BD4625" />
+          </label>
+          <label class="field">
+            again_webfile_no
+            <input id="f2_web2" placeholder="BGDDV9BD4625" />
+          </label>
+        </div>
+
+        <!-- Member 3 -->
+        <div>
+          <div class="muted">Member 3 (key "3")</div>
+          <label class="field">
+            name
+            <input id="f3_name" placeholder="A KHALEK MADBOR" />
+          </label>
+          <label class="field">
+            webfile_no
+            <input id="f3_web" placeholder="BGDDV9BDDA25" />
+          </label>
+          <label class="field">
+            again_webfile_no
+            <input id="f3_web2" placeholder="BGDDV9BDDA25" />
+          </label>
+        </div>
+
+        <!-- Member 4 -->
+        <div>
+          <div class="muted">Member 4 (key "4")</div>
+          <label class="field">
+            name
+            <input id="f4_name" placeholder="ABDUL AL MAMUN" />
+          </label>
+          <label class="field">
+            webfile_no
+            <input id="f4_web" placeholder="BGDDV9AD3E25" />
+          </label>
+          <label class="field">
+            again_webfile_no
+            <input id="f4_web2" placeholder="BGDDV9AD3E25" />
+          </label>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button type="submit">Save Config (POST /config)</button>
+        <button type="button" class="secondary" id="btnLoad">Load Current (/config)</button>
+        <span id="status" class="status"></span>
+      </div>
+    </form>
+
+    <div class="section-title" style="margin-top:18px;">Current /config JSON</div>
+    <pre id="jsonView">// এখানে /config এর JSON দেখাবে…</pre>
+  </div>
 
   <script>
-    const listEl = document.getElementById('list');
-    const emptyEl = document.getElementById('empty');
+    const statusEl = document.getElementById('status');
+    const jsonView = document.getElementById('jsonView');
 
-    const state = new Map(); // id -> record
-
-    function setEmpty() {
-      emptyEl.style.display = state.size ? 'none' : 'block';
+    function setStatus(msg, kind) {
+      statusEl.textContent = msg || '';
+      if (kind === 'err') statusEl.style.color = '#fca5a5';
+      else if (kind === 'ok') statusEl.style.color = '#bbf7d0';
+      else statusEl.style.color = '#e5e7eb';
     }
 
-    function cardTpl(rec) {
-      const wrap = document.createElement('div');
-      wrap.className = 'card';
-      wrap.id = `msg-${rec.id}`;
-      wrap.innerHTML = `
-        <div>
-          <div class="meta row"><strong>time:</strong> ${escapeHtml(rec.parts.time || '')}</div>
-          <div class="meta row"><strong>to:</strong> <span class="to-number">${escapeHtml(rec.parts.to || '')}</span></div>
-          <div class="text"><strong>text:</strong> ${escapeHtml(rec.parts.text || '')}</div>
-        </div>
-        <div>
-          <button class="btn-del" data-id="${rec.id}" title="Delete this message">Delete</button>
-        </div>
-      `;
-      wrap.querySelector('.btn-del').addEventListener('click', async (e) => {
-        const id = e.currentTarget.getAttribute('data-id');
-        try { await fetch(`/api/messages/${id}`, { method: 'DELETE' }); }
-        catch (err) { console.error(err); }
-      });
-      return wrap;
-    }
-
-    // নতুন কার্ড সবসময় তালিকার শুরুর দিকে বসানো হবে (top)
-    function addTop(rec) {
-      state.set(rec.id, rec);
-      const el = cardTpl(rec);
-      if (listEl.firstChild) listEl.insertBefore(el, listEl.firstChild);
-      else listEl.appendChild(el);
-      setEmpty();
-    }
-
-    function removeCard(id) {
-      state.delete(id);
-      const el = document.getElementById(`msg-${id}`);
-      if (el) el.remove();
-      setEmpty();
-    }
-
-    // Escape helper
-    function escapeHtml(s) {
-      return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-    }
-
-    // Initial load: সার্ভার যদি পুরোনো→নতুন অর্ডারে দেয়, আমরা reverse করে নতুনটাকে উপরে দেখাবো
-    async function bootFetch() {
+    async function loadConfig() {
       try {
-        const arr = await (await fetch('/api/messages')).json();
-        listEl.innerHTML = '';
-        state.clear();
-        // reverse করে addTop, ফলে লেটেস্ট একেবারে উপরে
-        for (const rec of arr.slice().reverse()) addTop(rec);
-      } catch (e) { console.warn('init fetch failed', e); }
+        setStatus('Loading /config …');
+        const res = await fetch('/config');
+        const data = await res.json();
+        jsonView.textContent = JSON.stringify(data, null, 2);
+        setStatus('Loaded /config', 'ok');
+
+        // ফর্মে auto-fill
+        const d = data.data || {};
+        const app = d.app || {};
+        const fam = d.family || {};
+
+        document.getElementById('mobile').value = d.mobile || '';
+        document.getElementById('appointment_date').value = d.appointment_date || '';
+        document.getElementById('go_live_at').value = data.go_live_at || '';
+
+        document.getElementById('app_highcom').value = app.highcom || '';
+        document.getElementById('app_webfile_id').value = app.webfile_id || '';
+        document.getElementById('app_webfile_id_repeat').value = app.webfile_id_repeat || '';
+        document.getElementById('app_ivac_id').value = app.ivac_id || '';
+        document.getElementById('app_visa_type').value = app.visa_type || '';
+        document.getElementById('app_family_count').value = app.family_count || '';
+
+        function fillMember(idx) {
+          const m = fam[idx] || {};
+          document.getElementById('f' + idx + '_name').value = m.name || '';
+          document.getElementById('f' + idx + '_web').value = m.webfile_no || '';
+          document.getElementById('f' + idx + '_web2').value = m.again_webfile_no || '';
+        }
+        [1,2,3,4].forEach(fillMember);
+
+      } catch (e) {
+        setStatus('Load failed: ' + e.message, 'err');
+      }
     }
 
-    // Live SSE
-    function bootSSE() {
-      const es = new EventSource('/events');
-      es.onmessage = (ev) => {
-        try {
-          const payload = JSON.parse(ev.data);
-          if (payload.type === 'init') {
-            listEl.innerHTML = '';
-            state.clear();
-            // init ব্যাচ আসলে reverse করে উপরে-থেকে-নীচে লেটেস্ট→ওল্ডেস্ট
-            for (const rec of payload.data.slice().reverse()) addTop(rec);
-          } else if (payload.type === 'new') {
-            addTop(payload.data); // নতুন এলেই একেবারে উপরে
-          } else if (payload.type === 'delete') {
-            removeCard(payload.id);
+    document.getElementById('btnLoad').addEventListener('click', loadConfig);
+
+    document.getElementById('cfgForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        const payload = {
+          mobile: document.getElementById('mobile').value.trim(),
+          appointment_date: document.getElementById('appointment_date').value.trim(),
+          go_live_at: document.getElementById('go_live_at').value.trim() || null,
+          app: {
+            highcom: document.getElementById('app_highcom').value.trim(),
+            webfile_id: document.getElementById('app_webfile_id').value.trim(),
+            webfile_id_repeat: document.getElementById('app_webfile_id_repeat').value.trim(),
+            ivac_id: document.getElementById('app_ivac_id').value.trim(),
+            visa_type: document.getElementById('app_visa_type').value.trim(),
+            family_count: document.getElementById('app_family_count').value.trim()
+          },
+          family: {
+            '1': {
+              name: document.getElementById('f1_name').value.trim(),
+              webfile_no: document.getElementById('f1_web').value.trim(),
+              again_webfile_no: document.getElementById('f1_web2').value.trim()
+            },
+            '2': {
+              name: document.getElementById('f2_name').value.trim(),
+              webfile_no: document.getElementById('f2_web').value.trim(),
+              again_webfile_no: document.getElementById('f2_web2').value.trim()
+            },
+            '3': {
+              name: document.getElementById('f3_name').value.trim(),
+              webfile_no: document.getElementById('f3_web').value.trim(),
+              again_webfile_no: document.getElementById('f3_web2').value.trim()
+            },
+            '4': {
+              name: document.getElementById('f4_name').value.trim(),
+              webfile_no: document.getElementById('f4_web').value.trim(),
+              again_webfile_no: document.getElementById('f4_web2').value.trim()
+            }
           }
-        } catch {}
-      };
-      es.onerror = () => console.warn('SSE disconnected…');
-    }
+        };
 
-    bootFetch();
-    bootSSE();
+        setStatus('Saving /config …');
+
+        const res = await fetch('/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok || data.ok === false) {
+          setStatus('Save failed: ' + (data.error || res.status), 'err');
+          return;
+        }
+
+        setStatus('Saved! version=' + data.version, 'ok');
+        await loadConfig();
+      } catch (e) {
+        setStatus('Save error: ' + e.message, 'err');
+      }
+    });
+
+    // প্রথম লোডেই /config দেখাই
+    loadConfig();
   </script>
 </body>
 </html>
