@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>SMS Receiver</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { color-scheme: dark light; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 0; background:#0f1115; color:#e6e7ea; }
+    header { padding:16px 20px; font-size:22px; font-weight:700; background:#12141a; border-bottom:1px solid #22252e; }
+    main { max-width: 900px; margin: 0 auto; padding: 16px; }
+    .card { background:#141823; border:1px solid #232835; border-radius:14px; padding:14px 16px; margin:12px 0; display:grid; grid-template-columns: 1fr auto; gap:10px; }
+    .meta { font-size:13px; opacity:.85; }
+    .row { margin:2px 0; }
+    .text { grid-column: 1 / -1; white-space: pre-wrap; word-break: break-word; font-size:15px; }
+    .btn-del { align-self:start; padding:8px 10px; border-radius:10px; border:1px solid #3a4254; background:#1b2130; color:#f3f4f6; cursor:pointer; }
+    .btn-del:hover { background:#222a3d; }
+    .empty { opacity:.7; text-align:center; padding:40px 0; }
+    a { color:#bcd3ff; text-decoration:none; }
+
+    /* মোবাইল নম্বর হাইলাইট */
+    .to-number { font-weight:700; color:#ffd166; }
+  </style>
+</head>
+<body>
+  <header>SMS Receiver</header>
+  <main>
+    <div id="list" class="list"></div>
+    <div id="empty" class="empty" style="display:none">No messages yet.</div>
+  </main>
+
+  <script>
+    const listEl = document.getElementById('list');
+    const emptyEl = document.getElementById('empty');
+
+    const state = new Map(); // id -> record
+
+    function setEmpty() {
+      emptyEl.style.display = state.size ? 'none' : 'block';
+    }
+
+    function cardTpl(rec) {
+      const wrap = document.createElement('div');
+      wrap.className = 'card';
+      wrap.id = `msg-${rec.id}`;
+      wrap.innerHTML = `
+        <div>
+          <div class="meta row"><strong>time:</strong> ${escapeHtml(rec.parts.time || '')}</div>
+          <div class="meta row"><strong>to:</strong> <span class="to-number">${escapeHtml(rec.parts.to || '')}</span></div>
+          <div class="text"><strong>text:</strong> ${escapeHtml(rec.parts.text || '')}</div>
+        </div>
+        <div>
+          <button class="btn-del" data-id="${rec.id}" title="Delete this message">Delete</button>
+        </div>
+      `;
+      wrap.querySelector('.btn-del').addEventListener('click', async (e) => {
+        const id = e.currentTarget.getAttribute('data-id');
+        try { await fetch(`/api/messages/${id}`, { method: 'DELETE' }); }
+        catch (err) { console.error(err); }
+      });
+      return wrap;
+    }
+
+    // নতুন কার্ড সবসময় তালিকার শুরুর দিকে বসানো হবে (top)
+    function addTop(rec) {
+      state.set(rec.id, rec);
+      const el = cardTpl(rec);
+      if (listEl.firstChild) listEl.insertBefore(el, listEl.firstChild);
+      else listEl.appendChild(el);
+      setEmpty();
+    }
+
+    function removeCard(id) {
+      state.delete(id);
+      const el = document.getElementById(`msg-${id}`);
+      if (el) el.remove();
+      setEmpty();
+    }
+
+    // Escape helper
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    // Initial load: সার্ভার যদি পুরোনো→নতুন অর্ডারে দেয়, আমরা reverse করে নতুনটাকে উপরে দেখাবো
+    async function bootFetch() {
+      try {
+        const arr = await (await fetch('/api/messages')).json();
+        listEl.innerHTML = '';
+        state.clear();
+        // reverse করে addTop, ফলে লেটেস্ট একেবারে উপরে
+        for (const rec of arr.slice().reverse()) addTop(rec);
+      } catch (e) { console.warn('init fetch failed', e); }
+    }
+
+    // Live SSE
+    function bootSSE() {
+      const es = new EventSource('/events');
+      es.onmessage = (ev) => {
+        try {
+          const payload = JSON.parse(ev.data);
+          if (payload.type === 'init') {
+            listEl.innerHTML = '';
+            state.clear();
+            // init ব্যাচ আসলে reverse করে উপরে-থেকে-নীচে লেটেস্ট→ওল্ডেস্ট
+            for (const rec of payload.data.slice().reverse()) addTop(rec);
+          } else if (payload.type === 'new') {
+            addTop(payload.data); // নতুন এলেই একেবারে উপরে
+          } else if (payload.type === 'delete') {
+            removeCard(payload.id);
+          }
+        } catch {}
+      };
+      es.onerror = () => console.warn('SSE disconnected…');
+    }
+
+    bootFetch();
+    bootSSE();
+  </script>
+</body>
+</html>
