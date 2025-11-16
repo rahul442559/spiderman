@@ -1,5 +1,5 @@
 // server.js
-// Simple config server for IVAC Master Panel dynamic values
+// IVAC Master Panel এর জন্য ডায়নামিক CONFIG সার্ভার
 
 const express = require('express');
 const cors = require('cors');
@@ -8,10 +8,9 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// --- Middleware ---
+// -------- Middleware --------
 app.use(express.json());
 
-// CORS: Browser userscript থেকে কল করবে, তাই * রাখা হল
 app.use(
   cors({
     origin: '*',
@@ -20,13 +19,14 @@ app.use(
   })
 );
 
-// Static files (index.html এখন root-এ আছে)
+// Static files (index.html root-এ থাকবে)
 app.use(express.static(__dirname));
 
-// --- In-memory config store ---
+// -------- In-memory CONFIG store --------
+// সার্ভার রিস্টার্ট হলে এটা রিসেট হবে – Railway তে ছোট কাজের জন্য যথেষ্ট
 let currentConfig = {
   version: 1,
-  go_live_at: null, // e.g. "2025-11-16T18:00:05+06:00" (optional)
+  go_live_at: null, // চাইলে future ISO time দিবে (নইলে null)
   data: {
     mobile: '01978442559',
     appointment_date: '2025-11-16',
@@ -63,14 +63,14 @@ let currentConfig = {
   }
 };
 
-// --- Routes ---
+// -------- Routes --------
 
-// GET /config → Master Panel এখান থেকে কনফিগ নেবে
+// GET /config -> Master Panel এখানে থেকে ডেটা নেবে
 app.get('/config', (req, res) => {
   res.json(currentConfig);
 });
 
-// POST /config → তুমি এখানে নতুন কনফিগ সাবমিট করবে (UI বা API দিয়ে)
+// POST /config -> UI থেকে তুমি নতুন ভ্যালু সাবমিট করবে
 app.post('/config', (req, res) => {
   try {
     const body = req.body || {};
@@ -103,9 +103,10 @@ app.post('/config', (req, res) => {
           visa_type: appFields?.visa_type || '2',
           family_count: appFields?.family_count || '0'
         },
-        family: family && typeof family === 'object'
-          ? family
-          : currentConfig.data.family
+        family:
+          family && typeof family === 'object'
+            ? family
+            : currentConfig.data.family
       }
     };
 
@@ -117,12 +118,12 @@ app.post('/config', (req, res) => {
   }
 });
 
-// Fallback → কোনো অন্য রুটে গেলে index.html পাঠাবে
+// অন্য যেকোনো রুটে গেলেও index.html দেখাবে
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// --- Start server ---
+// -------- Start server --------
 app.listen(PORT, () => {
   console.log('IVAC Config server running on port', PORT);
 });
