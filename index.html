@@ -134,57 +134,46 @@
 
     <!-- BASIC -->
     <div class="section-title">Basic</div>
-    <div class="grid-2">
-      <div>
-        <label class="field">
-          Mobile
-          <input id="mobile" placeholder="017XXXXXXXX" />
-        </label>
-
-        <label class="field">
-          Appointment Date
-          <span>(YYYY-MM-DD)</span>
-          <!-- calendar picker; value comes as YYYY-MM-DD -->
-          <input id="appointment_date" type="date" />
-        </label>
-      </div>
+    <div>
+      <label class="field">
+        Mobile
+        <input id="mobile" placeholder="017XXXXXXXX" />
+      </label>
 
       <label class="field">
-        Go Live At (optional)
-        <span>ISO time, e.g. 2025-11-16T18:00:05+06:00</span>
-        <input id="go_live_at" placeholder="(optional)" />
+        Appointment Date
+        <span>(YYYY-MM-DD)</span>
+        <!-- calendar picker; value comes as YYYY-MM-DD -->
+        <input id="appointment_date" type="date" />
       </label>
     </div>
 
     <div class="divider"></div>
 
-    <!-- APPLICATION -->
-    <div class="section-title">Application (form.app)</div>
-    <div class="grid-3">
-      <label class="field">
-        High Commission (highcom)
-        <input id="highcom" placeholder="3" />
-      </label>
-      <label class="field">
-        IVAC ID (ivac_id)
-        <input id="ivac_id" placeholder="2" />
-      </label>
-      <label class="field">
-        Visa Type (visa_type)
-        <input id="visa_type" placeholder="2" />
-      </label>
-      <label class="field">
-        Webfile ID
-        <input id="webfile_id" placeholder="BGDRV9BDA830" />
-      </label>
-      <label class="field">
-        Webfile ID (repeat)
-        <input id="webfile_id_repeat" placeholder="BGDRV9BDA830" />
-      </label>
-      <label class="field">
-        Family Count
-        <input id="family_count" placeholder="0" />
-      </label>
+    <!-- APPLICATION 1 -->
+    <div class="section-title">Application 1</div>
+    <div class="card">
+      <div class="grid-3">
+        <label class="field">
+          High Commission (highcom)
+          <input id="highcom" placeholder="3" />
+        </label>
+        <label class="field">
+          IVAC ID (ivac_id)
+          <input id="ivac_id" placeholder="2" />
+        </label>
+        <label class="field">
+          Visa Type (visa_type)
+          <input id="visa_type" placeholder="2" />
+        </label>
+      </div>
+
+      <div style="margin-top: 8px;">
+        <label class="field">
+          Webfile ID 1
+          <input id="webfile_id" placeholder="BGDRV9BDA830" />
+        </label>
+      </div>
     </div>
 
     <div class="divider"></div>
@@ -320,46 +309,61 @@
       return el ? el.value.trim() : "";
     }
 
+    function buildFamilyFromForm() {
+      return {
+        "1": {
+          name: getVal("f1_name"),
+          webfile_no: getVal("f1_webfile"),
+          again_webfile_no: getVal("f1_again")
+        },
+        "2": {
+          name: getVal("f2_name"),
+          webfile_no: getVal("f2_webfile"),
+          again_webfile_no: getVal("f2_again")
+        },
+        "3": {
+          name: getVal("f3_name"),
+          webfile_no: getVal("f3_webfile"),
+          again_webfile_no: getVal("f3_again")
+        },
+        "4": {
+          name: getVal("f4_name"),
+          webfile_no: getVal("f4_webfile"),
+          again_webfile_no: getVal("f4_again")
+        }
+      };
+    }
+
+    function countNonEmptyFamilyMembers(fam) {
+      return Object.values(fam).filter(m =>
+        m && (m.name || m.webfile_no || m.again_webfile_no)
+      ).length;
+    }
+
     function extractConfigFromForm() {
+      const fam = buildFamilyFromForm();
+      const familyCount = countNonEmptyFamilyMembers(fam);
+
+      const webfile = getVal("webfile_id");
+
       const cfg = {
         mobile: getVal("mobile"),
         appointment_date: getVal("appointment_date"),
-        go_live_at: getVal("go_live_at") || null,
         form: {
           app: {
             highcom: getVal("highcom"),
-            webfile_id: getVal("webfile_id"),
-            webfile_id_repeat: getVal("webfile_id_repeat"),
+            webfile_id: webfile,
+            // UI তে নেই, কিন্তু কনফিগে অটো সেট: repeat == webfile_id
+            webfile_id_repeat: webfile,
             ivac_id: getVal("ivac_id"),
             visa_type: getVal("visa_type"),
-            family_count: getVal("family_count")
+            family_count: String(familyCount)
           },
           personal: {
             full_name: getVal("personal_full_name"),
             email_name: getVal("personal_email_name"),
             webfile_id: getVal("personal_webfile_id"),
-            family: {
-              "1": {
-                name: getVal("f1_name"),
-                webfile_no: getVal("f1_webfile"),
-                again_webfile_no: getVal("f1_again")
-              },
-              "2": {
-                name: getVal("f2_name"),
-                webfile_no: getVal("f2_webfile"),
-                again_webfile_no: getVal("f2_again")
-              },
-              "3": {
-                name: getVal("f3_name"),
-                webfile_no: getVal("f3_webfile"),
-                again_webfile_no: getVal("f3_again")
-              },
-              "4": {
-                name: getVal("f4_name"),
-                webfile_no: getVal("f4_webfile"),
-                again_webfile_no: getVal("f4_again")
-              }
-            }
+            family: fam
           }
         }
       };
@@ -369,19 +373,21 @@
     function fillFormFromConfig(cfg) {
       if (!cfg) return;
       setVal("mobile", cfg.mobile || "");
-      if (cfg.appointment_date) {
-        document.getElementById("appointment_date").value = cfg.appointment_date;
-      }
 
-      setVal("go_live_at", cfg.go_live_at || "");
+      // type="date" → value = YYYY-MM-DD
+      if (cfg.appointment_date) {
+        const d = String(cfg.appointment_date).slice(0, 10);
+        const el = document.getElementById("appointment_date");
+        if (el) el.value = d;
+      }
 
       const app = (cfg.form && cfg.form.app) || cfg.app || {};
       setVal("highcom", app.highcom || "");
-      setVal("webfile_id", app.webfile_id || "");
-      setVal("webfile_id_repeat", app.webfile_id_repeat || "");
       setVal("ivac_id", app.ivac_id || "");
       setVal("visa_type", app.visa_type || "");
-      setVal("family_count", app.family_count || "");
+
+      const webfile = app.webfile_id || app.webfile_id_repeat || "";
+      setVal("webfile_id", webfile);
 
       const personal = (cfg.form && cfg.form.personal) || cfg.personal || {};
       setVal("personal_full_name", personal.full_name || "");
@@ -457,4 +463,3 @@
   </script>
 </body>
 </html>
-
