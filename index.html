@@ -45,7 +45,7 @@
       font-size: 11px;
       opacity: 0.75;
     }
-    input {
+    input, select {
       margin-top: 3px;
       padding: 6px 8px;
       border-radius: 8px;
@@ -55,7 +55,7 @@
       font-size: 12px;
       outline: none;
     }
-    input:focus {
+    input:focus, select:focus {
       border-color: #3b82f6;
       box-shadow: 0 0 0 1px #3b82f6;
     }
@@ -155,7 +155,13 @@
     <div class="card">
       <label class="field">
         High Commission
-        <input id="highcom" placeholder="3" />
+        <select id="highcom_select">
+          <option value="">Select High Commission</option>
+          <option value="DHAKA">DHAKA</option>
+          <option value="RAJSHAHI">RAJSHAHI</option>
+          <option value="SHYLET">SHYLET</option>
+          <option value="CHITTAGONG">CHITTAGONG</option>
+        </select>
       </label>
       <label class="field">
         IVAC ID
@@ -285,6 +291,20 @@
   </div>
 
   <script>
+    // High Commission mapping: UI label ↔ code
+    const HC_NAME_TO_CODE = {
+      DHAKA: "1",
+      RAJSHAHI: "3",
+      SHYLET: "4",
+      CHITTAGONG: "2"
+    };
+    const HC_CODE_TO_NAME = {
+      "1": "DHAKA",
+      "3": "RAJSHAHI",
+      "4": "SHYLET",
+      "2": "CHITTAGONG"
+    };
+
     function setStatus(msg, kind) {
       const el = document.getElementById("status");
       if (!el) return;
@@ -341,14 +361,18 @@
 
       const webfile = getVal("webfile_id");
 
+      // dropdown থেকে নাম → কোড
+      const hcName = getVal("highcom_select");
+      const highcomCode = HC_NAME_TO_CODE[hcName] || "";
+
       const cfg = {
         mobile: getVal("mobile"),
         appointment_date: getVal("appointment_date"),
         form: {
           app: {
-            highcom: getVal("highcom"),
+            highcom: highcomCode,
             webfile_id: webfile,
-            // UI তে নেই, কিন্তু কনফিগে অটো সেট: repeat == webfile_id
+            // repeat == webfile_id (অটো)
             webfile_id_repeat: webfile,
             ivac_id: getVal("ivac_id"),
             visa_type: getVal("visa_type"),
@@ -377,7 +401,12 @@
       }
 
       const app = (cfg.form && cfg.form.app) || cfg.app || {};
-      setVal("highcom", app.highcom || "");
+
+      // কোড → নাম এবং ড্রপডাউনে সেট
+      const hcCode = app.highcom || "";
+      const hcName = HC_CODE_TO_NAME[hcCode] || "";
+      setVal("highcom_select", hcName);
+
       setVal("ivac_id", app.ivac_id || "");
       setVal("visa_type", app.visa_type || "");
 
