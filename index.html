@@ -14,84 +14,49 @@
       color: #111827;
     }
     h1 {
-      font-size: 24px;
-      font-weight: 700;
-      margin-bottom: 8px;
+      margin-bottom: 4px;
     }
     h2 {
-      font-size: 18px;
+      margin-top: 20px;
       margin-bottom: 8px;
-      border-bottom: 1px solid #e5e7eb;
-      padding-bottom: 4px;
-    }
-    .subtitle {
-      font-size: 13px;
-      color: #6b7280;
-      margin-bottom: 20px;
-    }
-    .layout {
-      display: grid;
-      grid-template-columns: 2fr 3fr;
-      gap: 16px;
-    }
-    @media (max-width: 768px) {
-      .layout {
-        grid-template-columns: 1fr;
-      }
     }
     .card {
-      background: white;
+      background: #ffffff;
       border-radius: 12px;
-      padding: 16px;
-      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1);
-      border: 1px solid #e5e7eb;
-      box-sizing: border-box;
-    }
-    .card + .card {
-      margin-top: 16px;
-    }
-    label {
-      display: block;
-      font-size: 13px;
-      font-weight: 500;
-      margin-bottom: 4px;
-      color: #374151;
-    }
-    input,
-    textarea,
-    select {
-      width: 100%;
-      padding: 6px 8px;
-      border-radius: 8px;
-      border: 1px solid #d1d5db;
-      font-size: 13px;
-      box-sizing: border-box;
+      padding: 12px 14px;
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
       margin-bottom: 10px;
-      font-family: inherit;
-    }
-    input:focus,
-    textarea:focus,
-    select:focus {
-      outline: none;
-      border-color: #2563eb;
-      box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.4);
     }
     .row {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 12px;
-      margin-bottom: 8px;
-    }
-    @media (max-width: 768px) {
-      .row {
-        grid-template-columns: 1fr;
-      }
-    }
-    .actions {
       display: flex;
-      align-items: center;
+      flex-wrap: wrap;
       gap: 12px;
-      margin-top: 8px;
+      margin-bottom: 10px;
+    }
+    label {
+      display: flex;
+      flex-direction: column;
+      font-size: 13px;
+      gap: 4px;
+    }
+    input, textarea {
+      padding: 5px 7px;
+      font-size: 13px;
+      border-radius: 8px;
+      border: 1px solid #d4d4d8;
+      min-width: 200px;
+      box-sizing: border-box;
+    }
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 1px #2563eb33;
+    }
+    textarea {
+      width: 100%;
+      min-height: 140px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      resize: vertical;
     }
     button {
       padding: 7px 14px;
@@ -109,267 +74,172 @@
     }
     #status {
       font-size: 13px;
-      color: #4b5563;
+      margin-bottom: 10px;
     }
-    .status-ok {
-      color: #065f46;
-    }
-    .status-err {
-      color: #b91c1c;
-    }
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      padding: 2px 8px;
-      border-radius: 999px;
+    .status-ok { color: #16a34a; }
+    .status-err { color: #dc2626; }
+    .status-muted { color: #6b7280; }
+    small {
       font-size: 11px;
-      font-weight: 600;
-      color: #111827;
-      background: #e5e7eb;
-    }
-    .badge span {
-      display: inline-block;
-      margin-left: 4px;
-      padding: 0 6px;
-      border-radius: 999px;
-      background: #111827;
-      color: #f9fafb;
-    }
-    .small-text {
-      font-size: 12px;
       color: #6b7280;
-      margin-top: 6px;
-    }
-    textarea#familyJson {
-      min-height: 240px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-        "Liberation Mono", "Courier New", monospace;
-      font-size: 12px;
-      line-height: 1.5;
-      white-space: pre;
     }
     .meta {
       font-size: 11px;
       color: #6b7280;
       margin-top: 4px;
     }
-    .field-caption {
-      font-size: 11px;
-      color: #6b7280;
-      margin-top: -6px;
-      margin-bottom: 8px;
-    }
   </style>
 </head>
 <body>
   <h1>IVAC Master Panel Config</h1>
-  <div class="subtitle">
-    UI থেকে ডাটা সেট করবে → লোকাল/রেলওয়ে সার্ভারে সেভ হবে → Master Panel ব্যাকগ্রাউন্ড থেকে
-    /config হিট করে টেনে নিবে (go_live_at দেখে নির্দিষ্ট সময়ে অটো-স্টার্ট)
-  </div>
+  <div id="status" class="status-muted">Loading current config…</div>
 
-  <div class="layout">
-    <!-- LEFT: BASIC + APP FIELDS -->
-    <div>
-      <div class="card">
-        <h2>Basic Info</h2>
-        <label>Mobile
-          <input name="mobile" placeholder="017xxxxxxxx" />
+  <form id="cfgForm">
+    <div class="card">
+      <h2>Basic</h2>
+      <div class="row">
+        <label>
+          Mobile
+          <input name="mobile" required placeholder="019xxxxxxx" />
         </label>
-        <div class="field-caption">
-          Master Panel → CONFIG.mobile এ বসবে
-        </div>
-
-        <label>Appointment Date (YYYY-MM-DD)
-          <input name="appointment_date" placeholder="2025-11-20" />
+        <label>
+          Appointment Date (YYYY-MM-DD)
+          <input name="appointment_date" required placeholder="2025-11-16" />
         </label>
-        <div class="field-caption">
-          Master Panel → CONFIG.appointment_date এ বসবে
-        </div>
-
-        <label>Go Live At (YYYY-MM-DD HH:MM:SS)
-          <input name="go_live_at" placeholder="2025-11-20 10:45:00" />
+        <label>
+          Go Live At (ISO, optional)
+          <input name="go_live_at" placeholder="2025-11-16T18:00:05+06:00" />
+          <small>শুধু এই টাইমের পরেই ব্রাউজার কনফিগ আপডেট করবে। ফাঁকা রাখলে সাথে সাথেই প্রয়োগ হবে।</small>
         </label>
-        <div class="field-caption">
-          নির্দিষ্ট টাইমে Master Panel অটো স্টার্ট করার জন্য।
-        </div>
-
-        <div class="actions">
-          <button id="btnSave">Save Config</button>
-          <div id="status"></div>
-        </div>
-        <div class="small-text">
-          <span class="badge">
-            ENV<span>spiderman.up.railway.app</span>
-          </span>
-        </div>
-      </div>
-
-      <div class="card">
-        <h2>App Fields (CONFIG.form.app)</h2>
-        <div class="row">
-          <label>High Commission (highcom)
-            <select name="highcom" required>
-              <option value="">-- Select --</option>
-              <option value="1">Dhaka (High Commission of India)</option>
-              <option value="2">Chittagong (Assistant High Commission)</option>
-              <option value="3">Rajshahi (Assistant High Commission)</option>
-              <option value="4">Sylhet (Assistant High Commission)</option>
-              <option value="5">Khulna (Assistant High Commission)</option>
-            </select>
-          </label>
-          <label>webfile_id
-            <input name="webfile_id" placeholder="BGDDV9BDF425" />
-          </label>
-          <label>webfile_id_repeat
-            <input name="webfile_id_repeat" placeholder="BGDDV9BDF425" />
-          </label>
-          <label>ivac_id
-            <input name="ivac_id" placeholder="2" />
-          </label>
-          <label>visa_type
-            <input name="visa_type" placeholder="2" />
-          </label>
-          <label>family_count
-            <input name="family_count" placeholder="0" />
-          </label>
-        </div>
       </div>
     </div>
 
-    <!-- RIGHT: FAMILY JSON -->
-    <div>
-      <div class="card">
-        <h2>Family JSON (CONFIG.form.personal.family)</h2>
-        <p>
-          <small>
-            এখানে সরাসরি JSON এডিট করবে। উদাহরণ:<br/>
-            { "1": { "name": "SAJJAD", "webfile_no": "BGD...", "again_webfile_no": "BGD..." }, ... }
-          </small>
-        </p>
-        <textarea id="familyJson"></textarea>
-        <div class="meta">
-          ফাঁকা রাখলে পুরোনো family ডেটা যেমন আছে তেমনই থাকবে।
-        </div>
-      </div>
-
-      <div style="margin-top: 16px; font-size: 11px; color: #6b7280;">
-        <strong>নোট:</strong> এই পেজটা শুধু কনফিগ UI। Master Panel স্ক্রিপ্টে
-        <code>http://localhost:3000/config</code> (অথবা
-        <code>https://spiderman.up.railway.app/config</code>) থেকে ডাটা ফেচ করে
-        <code>CONFIG.form.*</code> এ apply করবে, আর <code>go_live_at</code> দেখে
-        অটো রান করবে।
+    <div class="card">
+      <h2>App Fields (CONFIG.form.app)</h2>
+      <div class="row">
+        <label>highcom
+          <!-- আগের 3 ছিল, এখন Dhaka = 1 -->
+          <input name="highcom" placeholder="1" />
+        </label>
+        <label>webfile_id
+          <input name="webfile_id" placeholder="BGDRV9BDA830" />
+        </label>
+        <label>webfile_id_repeat
+          <input name="webfile_id_repeat" placeholder="BGDRV9BDA830" />
+        </label>
+        <label>ivac_id
+          <!-- Dhaka JFP ধরে 17 দিলাম -->
+          <input name="ivac_id" placeholder="17" />
+        </label>
+        <label>visa_type
+          <!-- Medical / Med Attendant এর জন্য 13 -->
+          <input name="visa_type" placeholder="13" />
+        </label>
+        <label>family_count
+          <input name="family_count" placeholder="4" />
+        </label>
       </div>
     </div>
-  </div>
+
+    <div class="card">
+      <h2>Family JSON (CONFIG.form.personal.family)</h2>
+      <p>
+        <small>
+          এখানে সরাসরি JSON এডিট করবে। উদাহরণ:<br/>
+          { "1": { "name": "SAJJAD", "webfile_no": "BGD...", "again_webfile_no": "BGD..." }, ... }
+        </small>
+      </p>
+      <textarea id="familyJson"></textarea>
+      <div class="meta">
+        ফাঁকা রাখলে পুরোনো family ডেটা যেমন আছে তেমনই থাকবে।
+      </div>
+    </div>
+
+    <div style="margin-top: 12px;">
+      <button type="submit">Save Config</button>
+    </div>
+  </form>
 
   <script>
-    const API_BASE = ''; // same origin (Railway / localhost)
-
     async function loadConfig() {
-      const status = document.getElementById('status');
-      status.textContent = 'Loading current config...';
-      status.className = '';
-
       try {
-        const res = await fetch(API_BASE + '/config?t=' + Date.now(), {
-          cache: 'no-store'
-        });
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-
+        const res = await fetch('/config');
+        if (!res.ok) {
+          throw new Error('HTTP ' + res.status);
+        }
         const json = await res.json();
-        const data = json.data || {};
-        const app = data.app || {};
-        const family = data.family || {};
+        const d = json.data || {};
+        const app = d.app || {};
 
-        const form = document.querySelector('form') || document;
+        document.querySelector('[name="mobile"]').value = d.mobile || '';
+        document.querySelector('[name="appointment_date"]').value = d.appointment_date || '';
+        document.querySelector('[name="go_live_at"]').value = json.go_live_at || '';
 
-        // Basic
-        form.querySelector('[name="mobile"]').value =
-          data.mobile || '';
-        form.querySelector('[name="appointment_date"]').value =
-          data.appointment_date || '';
-        form.querySelector('[name="go_live_at"]').value =
-          data.go_live_at || '';
-
-        // App
         document.querySelector('[name="highcom"]').value = app.highcom || '';
-        document.querySelector('[name="webfile_id"]').value =
-          app.webfile_id || '';
-        document.querySelector('[name="webfile_id_repeat"]').value =
-          app.webfile_id_repeat || '';
-        document.querySelector('[name="ivac_id"]').value =
-          app.ivac_id || '';
-        document.querySelector('[name="visa_type"]').value =
-          app.visa_type || '';
-        document.querySelector('[name="family_count"]').value =
-          app.family_count || '';
+        document.querySelector('[name="webfile_id"]').value = app.webfile_id || '';
+        document.querySelector('[name="webfile_id_repeat"]').value = app.webfile_id_repeat || '';
+        document.querySelector('[name="ivac_id"]').value = app.ivac_id || '';
+        document.querySelector('[name="visa_type"]').value = app.visa_type || '';
+        document.querySelector('[name="family_count"]').value = app.family_count || '';
 
-        // Family JSON
-        const familyTextarea = document.getElementById('familyJson');
-        familyTextarea.value =
-          Object.keys(family).length > 0
-            ? JSON.stringify(family, null, 2)
-            : '';
+        document.getElementById('familyJson').value = JSON.stringify(d.family || {}, null, 2);
 
+        const status = document.getElementById('status');
         status.textContent = 'Loaded version ' + (json.version || 1);
         status.className = 'status-ok';
-      } catch (err) {
-        console.error('loadConfig error:', err);
-        status.textContent = 'Load failed: ' + err.message;
+      } catch (e) {
+        const status = document.getElementById('status');
+        status.textContent = 'Failed to load config: ' + e;
         status.className = 'status-err';
       }
     }
 
-    document.getElementById('btnSave').addEventListener('click', async () => {
+    document.getElementById('cfgForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
       const status = document.getElementById('status');
-      status.textContent = 'Saving...';
-      status.className = '';
 
-      const form = document.querySelector('form') || document;
-
-      const familyTextarea = document.getElementById('familyJson');
-      let family;
-      if (familyTextarea.value.trim()) {
+      let family = undefined;
+      const rawFamily = document.getElementById('familyJson').value.trim();
+      if (rawFamily) {
         try {
-          family = JSON.parse(familyTextarea.value);
-        } catch (e) {
-          alert('Family JSON invalid: ' + e.message);
-          status.textContent = 'Family JSON invalid';
-          status.className = 'status-err';
+          family = JSON.parse(rawFamily);
+        } catch (err) {
+          alert('Invalid JSON in family field: ' + err.message);
           return;
         }
       }
 
       const body = {
-        mobile: form.querySelector('[name="mobile"]').value.trim(),
-        appointment_date: form
-          .querySelector('[name="appointment_date"]')
-          .value.trim(),
-        go_live_at: form.querySelector('[name="go_live_at"]').value.trim() || null,
+        mobile: form.mobile.value.trim(),
+        appointment_date: form.appointment_date.value.trim(),
+        go_live_at: form.go_live_at.value.trim() || null,
         app: {
-          highcom: form.querySelector('[name="highcom"]').value.trim(),
-          webfile_id: form.querySelector('[name="webfile_id"]').value.trim(),
-          webfile_id_repeat: form
-            .querySelector('[name="webfile_id_repeat"]')
-            .value.trim(),
-          ivac_id: form.querySelector('[name="ivac_id"]').value.trim(),
-          visa_type: form.querySelector('[name="visa_type"]').value.trim(),
-          family_count: form.querySelector('[name="family_count"]').value.trim()
+          highcom: form.highcom.value.trim(),
+          webfile_id: form.webfile_id.value.trim(),
+          webfile_id_repeat: form.webfile_id_repeat.value.trim(),
+          ivac_id: form.ivac_id.value.trim(),
+          visa_type: form.visa_type.value.trim(),
+          family_count: form.family_count.value.trim()
         },
+        // family ফাঁকা থাকলে পাঠাবোই না, যাতে পুরোনোটা রেখে দেওয়া যায়
         ...(family !== undefined ? { family } : {})
       };
 
       try {
-        const res = await fetch(API_BASE + '/config', {
+        status.textContent = 'Saving…';
+        status.className = 'status-muted';
+
+        const res = await fetch('/config', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body)
         });
-        if (!res.ok) throw new Error('HTTP ' + res.status);
+
         const json = await res.json();
+        if (!res.ok || !json.ok) {
+          throw new Error(json.error || ('HTTP ' + res.status));
+        }
 
         status.textContent = 'Saved version ' + json.version;
         status.className = 'status-ok';
