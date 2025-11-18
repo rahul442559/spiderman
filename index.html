@@ -129,32 +129,41 @@
 
     <!-- APP FIELDS SECTION -->
     <div class="card">
-      <h2>App Fields (CONFIG.form.app)</h2>
+      <h2>App Fields</h2>
 
-      <!-- Highcom dropdown -->
+      <!-- Mission / Highcom dropdown -->
       <label>
-        High Commission (highcom)
+        Mission (highcom)
         <select name="highcom">
-          <option value="">-- Select --</option>
+          <option value="">-- Select Mission --</option>
           <option value="1">Dhaka (1)</option>
           <option value="2">Chittagong (2)</option>
           <option value="3">Rajshahi (3)</option>
           <option value="4">Sylhet (4)</option>
           <option value="5">Khulna (5)</option>
         </select>
-        <small>যেটা সিলেক্ট করবে তার value (1–5) backend এ highcom হিসেবে যাবে।</small>
+        <small>মিশন সিলেক্ট করলে অটো IVAC Center সেট হবে। ভ্যালু 1–5 backend-এ highcom হিসেবে যাবে।</small>
       </label>
 
-      <!-- Webfile ID (single) -->
+      <!-- IVAC Center (auto from mission) -->
+      <label>
+        IVAC Center
+        <select name="ivac_id">
+          <option value="">-- Select IVAC --</option>
+          <option value="17">IVAC JAMUNA (17)</option>
+          <option value="6">IVAC CHITTAGONG (6)</option>
+          <option value="3">IVAC RAJSHAHI (3)</option>
+          <option value="7">IVAC SYLHET (7)</option>
+          <option value="5">KHULNA IVAC (5)</option>
+        </select>
+        <small>Mission পরিবর্তন করলে এখানে অটো সিলেক্ট হবে। internal ভ্যালু 17/3/6/7/5 যাবে।</small>
+      </label>
+
+      <!-- Webfile ID (single, repeat auto) -->
       <label>
         Webfile ID
         <input name="webfile_id" placeholder="BGDRV9BDA830" />
         <small>backend এ <code>webfile_id_repeat</code> একই মান ধরে নিবে।</small>
-      </label>
-
-      <label>
-        ivac_id
-        <input name="ivac_id" placeholder="17" />
       </label>
 
       <label>
@@ -195,6 +204,29 @@
   </form>
 
   <script>
+    // Mission -> IVAC mapping
+    const MISSION_TO_IVAC = {
+      '1': '17', // Dhaka → IVAC JAMUNA
+      '2': '6',  // Chittagong → IVAC CHITTAGONG
+      '3': '3',  // Rajshahi → IVAC RAJSHAHI
+      '4': '7',  // Sylhet → IVAC SYLHET
+      '5': '5'   // Khulna → KHULNA IVAC
+    };
+
+    function syncIvacFromMission(force = false) {
+      const missionSelect = document.querySelector('[name="highcom"]');
+      const ivacSelect = document.querySelector('[name="ivac_id"]');
+      if (!missionSelect || !ivacSelect) return;
+
+      const missionVal = missionSelect.value;
+      const mapped = MISSION_TO_IVAC[missionVal];
+
+      // force == true হলে সবসময় override, নইলে শুধু যখন ivac ফাঁকা তখন
+      if (mapped && (force || !ivacSelect.value)) {
+        ivacSelect.value = mapped;
+      }
+    }
+
     async function loadConfig() {
       try {
         const res = await fetch('/config');
@@ -214,16 +246,24 @@
           json.go_live_at || '';
 
         // APP FIELDS
-        // highcom dropdown
-        document.querySelector('[name="highcom"]').value =
-          app.highcom || '';
+        const missionSelect = document.querySelector('[name="highcom"]');
+        const ivacSelect = document.querySelector('[name="ivac_id"]');
+
+        // highcom (mission)
+        missionSelect.value = app.highcom || '';
+
+        // ivac_id (IVAC Center)
+        ivacSelect.value = app.ivac_id || '';
+
+        // যদি ivac ফাঁকা থাকে কিন্তু mission set থাকে, তাহলে mapping থেকে সেট করে দাও
+        if (!ivacSelect.value && missionSelect.value) {
+          syncIvacFromMission(true);
+        }
 
         // Webfile ID (single)
         document.querySelector('[name="webfile_id"]').value =
           app.webfile_id || app.webfile_id_repeat || '';
 
-        document.querySelector('[name="ivac_id"]').value =
-          app.ivac_id || '';
         document.querySelector('[name="visa_type"]').value =
           app.visa_type || '';
         document.querySelector('[name="family_count"]').value =
@@ -266,15 +306,13 @@
         appointment_date: form.appointment_date.value.trim(),
         go_live_at: form.go_live_at.value.trim() || null,
         app: {
-          highcom: form.highcom.value.trim(),          // dropdown থেকে 1–5
+          highcom: form.highcom.value.trim(),      // Mission value (1–5)
           webfile_id: webfileId,
-          // UI-তে একবার ইনপুট, backend এ একই মান repeat:
-          webfile_id_repeat: webfileId,
-          ivac_id: form.ivac_id.value.trim(),
+          webfile_id_repeat: webfileId,           // auto repeat
+          ivac_id: form.ivac_id.value.trim(),     // IVAC Center from dropdown (17/3/6/7/5)
           visa_type: form.visa_type.value.trim(),
           family_count: form.family_count.value.trim()
         },
-        // family ফাঁকা থাকলে পাঠাবোই না, যাতে পুরোনোটা রেখে দেওয়া যায়
         ...(family !== undefined ? { family } : {})
       };
 
@@ -300,6 +338,16 @@
         status.textContent = 'Save failed: ' + err.message;
         status.className = 'status-err';
         alert('Error: ' + err.message);
+      }
+    });
+
+    // Mission change এ mapping apply
+    document.addEventListener('DOMContentLoaded', () => {
+      const missionSelect = document.querySelector('[name="highcom"]');
+      if (missionSelect) {
+        missionSelect.addEventListener('change', () => {
+          syncIvacFromMission(true);
+        });
       }
     });
 
