@@ -133,7 +133,7 @@
 
       <!-- Mission / Highcom dropdown -->
       <label>
-        Mission (highcom)
+        Mission
         <select name="highcom">
           <option value="">-- Select Mission --</option>
           <option value="1">Dhaka (1)</option>
@@ -142,7 +142,6 @@
           <option value="4">Sylhet (4)</option>
           <option value="5">Khulna (5)</option>
         </select>
-        <small>মিশন সিলেক্ট করলে অটো IVAC Center সেট হবে। ভ্যালু 1–5 backend-এ highcom হিসেবে যাবে।</small>
       </label>
 
       <!-- IVAC Center (auto from mission) -->
@@ -156,19 +155,27 @@
           <option value="7">IVAC SYLHET (7)</option>
           <option value="5">KHULNA IVAC (5)</option>
         </select>
-        <small>Mission পরিবর্তন করলে এখানে অটো সিলেক্ট হবে। internal ভ্যালু 17/3/6/7/5 যাবে।</small>
       </label>
 
       <!-- Webfile ID (single, repeat auto) -->
       <label>
         Webfile ID
         <input name="webfile_id" placeholder="BGDRV9BDA830" />
-        <small>backend এ <code>webfile_id_repeat</code> একই মান ধরে নিবে।</small>
       </label>
 
+      <!-- Visa Type dropdown -->
       <label>
-        visa_type
-        <input name="visa_type" placeholder="13" />
+        Visa Type
+        <select name="visa_type">
+          <option value="">-- Select Visa Type --</option>
+          <option value="3">TOURIST VISA</option>
+          <option value="13">MEDICAL VISA</option>
+          <option value="1">BUSINESS VISA</option>
+          <option value="6">ENTRY VISA</option>
+          <option value="19">DOUBLE ENTRY VISA</option>
+          <option value="2">STUDENT VISA</option>
+          <option value="18">OTHERS VISA</option>
+        </select>
       </label>
 
       <label>
@@ -248,6 +255,7 @@
         // APP FIELDS
         const missionSelect = document.querySelector('[name="highcom"]');
         const ivacSelect = document.querySelector('[name="ivac_id"]');
+        const visaTypeSelect = document.querySelector('[name="visa_type"]');
 
         // highcom (mission)
         missionSelect.value = app.highcom || '';
@@ -260,12 +268,13 @@
           syncIvacFromMission(true);
         }
 
+        // Visa Type
+        visaTypeSelect.value = app.visa_type || '';
+
         // Webfile ID (single)
         document.querySelector('[name="webfile_id"]').value =
           app.webfile_id || app.webfile_id_repeat || '';
 
-        document.querySelector('[name="visa_type"]').value =
-          app.visa_type || '';
         document.querySelector('[name="family_count"]').value =
           app.family_count || '';
 
@@ -310,7 +319,7 @@
           webfile_id: webfileId,
           webfile_id_repeat: webfileId,           // auto repeat
           ivac_id: form.ivac_id.value.trim(),     // IVAC Center from dropdown (17/3/6/7/5)
-          visa_type: form.visa_type.value.trim(),
+          visa_type: form.visa_type.value.trim(), // Visa Type dropdown value
           family_count: form.family_count.value.trim()
         },
         ...(family !== undefined ? { family } : {})
