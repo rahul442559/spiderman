@@ -5,52 +5,63 @@
   <title>IVAC Master Panel Config</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
+    :root {
+      color-scheme: dark;
+    }
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       max-width: 960px;
       margin: 16px auto;
       padding: 0 12px;
-      background: #f4f4f5;
-      color: #111827;
+      background: #020617; /* dark slate */
+      color: #e5e7eb;
     }
     h1 {
       margin-bottom: 4px;
+      font-size: 22px;
     }
     h2 {
-      margin-top: 20px;
-      margin-bottom: 8px;
+      margin-top: 8px;
+      margin-bottom: 10px;
+      font-size: 16px;
     }
     .card {
-      background: #ffffff;
+      background: #020617;
       border-radius: 12px;
       padding: 12px 14px;
-      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
-      margin-bottom: 10px;
-    }
-    .row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-bottom: 10px;
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.9);
+      margin-bottom: 12px;
+      border: 1px solid #1f2937;
     }
     label {
       display: flex;
       flex-direction: column;
       font-size: 13px;
       gap: 4px;
+      margin-bottom: 10px;
     }
-    input, textarea {
-      padding: 5px 7px;
+    input,
+    textarea,
+    select {
+      padding: 6px 8px;
       font-size: 13px;
       border-radius: 8px;
-      border: 1px solid #d4d4d8;
-      min-width: 200px;
+      border: 1px solid #4b5563;
+      min-width: 220px;
       box-sizing: border-box;
+      background: #020617;
+      color: #e5e7eb;
     }
-    input:focus, textarea:focus {
+    input::placeholder,
+    textarea::placeholder {
+      color: #6b7280;
+    }
+    input:focus,
+    textarea:focus,
+    select:focus {
       outline: none;
       border-color: #2563eb;
-      box-shadow: 0 0 0 1px #2563eb33;
+      box-shadow: 0 0 0 1px #2563eb66;
     }
     textarea {
       width: 100%;
@@ -67,7 +78,7 @@
       font-weight: 600;
       cursor: pointer;
       font-size: 13px;
-      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.3);
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.6);
     }
     button:hover {
       background: #1d4ed8;
@@ -76,16 +87,16 @@
       font-size: 13px;
       margin-bottom: 10px;
     }
-    .status-ok { color: #16a34a; }
-    .status-err { color: #dc2626; }
-    .status-muted { color: #6b7280; }
+    .status-ok { color: #22c55e; }
+    .status-err { color: #f97373; }
+    .status-muted { color: #9ca3af; }
     small {
       font-size: 11px;
-      color: #6b7280;
+      color: #9ca3af;
     }
     .meta {
       font-size: 11px;
-      color: #6b7280;
+      color: #9ca3af;
       margin-top: 4px;
     }
   </style>
@@ -95,52 +106,69 @@
   <div id="status" class="status-muted">Loading current config…</div>
 
   <form id="cfgForm">
+    <!-- BASIC SECTION (Mobile, then Appointment Date) -->
     <div class="card">
       <h2>Basic</h2>
-      <div class="row">
-        <label>
-          Mobile
-          <input name="mobile" required placeholder="019xxxxxxx" />
-        </label>
-        <label>
-          Appointment Date (YYYY-MM-DD)
-          <input name="appointment_date" required placeholder="2025-11-16" />
-        </label>
-        <label>
-          Go Live At (ISO, optional)
-          <input name="go_live_at" placeholder="2025-11-16T18:00:05+06:00" />
-          <small>শুধু এই টাইমের পরেই ব্রাউজার কনফিগ আপডেট করবে। ফাঁকা রাখলে সাথে সাথেই প্রয়োগ হবে।</small>
-        </label>
-      </div>
+
+      <label>
+        Mobile
+        <input name="mobile" required placeholder="019xxxxxxx" />
+      </label>
+
+      <label>
+        Appointment Date (YYYY-MM-DD)
+        <input name="appointment_date" required placeholder="2025-11-16" />
+      </label>
+
+      <label>
+        Go Live At (ISO, optional)
+        <input name="go_live_at" placeholder="2025-11-16T18:00:05+06:00" />
+        <small>শুধু এই টাইমের পরেই ব্রাউজার কনফিগ আপডেট করবে। ফাঁকা রাখলে সাথে সাথেই প্রয়োগ হবে।</small>
+      </label>
     </div>
 
+    <!-- APP FIELDS SECTION -->
     <div class="card">
       <h2>App Fields (CONFIG.form.app)</h2>
-      <div class="row">
-        <label>highcom
-          <!-- আগের 3 ছিল, এখন Dhaka = 1 -->
-          <input name="highcom" placeholder="1" />
-        </label>
-        <label>webfile_id
-          <input name="webfile_id" placeholder="BGDRV9BDA830" />
-        </label>
-        <label>webfile_id_repeat
-          <input name="webfile_id_repeat" placeholder="BGDRV9BDA830" />
-        </label>
-        <label>ivac_id
-          <!-- Dhaka JFP ধরে 17 দিলাম -->
-          <input name="ivac_id" placeholder="17" />
-        </label>
-        <label>visa_type
-          <!-- Medical / Med Attendant এর জন্য 13 -->
-          <input name="visa_type" placeholder="13" />
-        </label>
-        <label>family_count
-          <input name="family_count" placeholder="4" />
-        </label>
-      </div>
+
+      <!-- Highcom dropdown -->
+      <label>
+        High Commission (highcom)
+        <select name="highcom">
+          <option value="">-- Select --</option>
+          <option value="1">Dhaka (1)</option>
+          <option value="2">Chittagong (2)</option>
+          <option value="3">Rajshahi (3)</option>
+          <option value="4">Sylhet (4)</option>
+          <option value="5">Khulna (5)</option>
+        </select>
+        <small>যেটা সিলেক্ট করবে তার value (1–5) backend এ highcom হিসেবে যাবে।</small>
+      </label>
+
+      <!-- Webfile ID (single) -->
+      <label>
+        Webfile ID
+        <input name="webfile_id" placeholder="BGDRV9BDA830" />
+        <small>backend এ <code>webfile_id_repeat</code> একই মান ধরে নিবে।</small>
+      </label>
+
+      <label>
+        ivac_id
+        <input name="ivac_id" placeholder="17" />
+      </label>
+
+      <label>
+        visa_type
+        <input name="visa_type" placeholder="13" />
+      </label>
+
+      <label>
+        family_count
+        <input name="family_count" placeholder="4" />
+      </label>
     </div>
 
+    <!-- FAMILY JSON SECTION -->
     <div class="card">
       <h2>Family JSON (CONFIG.form.personal.family)</h2>
       <p>
@@ -149,7 +177,13 @@
           { "1": { "name": "SAJJAD", "webfile_no": "BGD...", "again_webfile_no": "BGD..." }, ... }
         </small>
       </p>
-      <textarea id="familyJson"></textarea>
+      <textarea id="familyJson" placeholder='{
+  "1": {
+    "name": "SAJJAD",
+    "webfile_no": "BGD...",
+    "again_webfile_no": "BGD..."
+  }
+}'></textarea>
       <div class="meta">
         ফাঁকা রাখলে পুরোনো family ডেটা যেমন আছে তেমনই থাকবে।
       </div>
@@ -171,18 +205,33 @@
         const d = json.data || {};
         const app = d.app || {};
 
-        document.querySelector('[name="mobile"]').value = d.mobile || '';
-        document.querySelector('[name="appointment_date"]').value = d.appointment_date || '';
-        document.querySelector('[name="go_live_at"]').value = json.go_live_at || '';
+        // BASIC
+        document.querySelector('[name="mobile"]').value =
+          d.mobile || '';
+        document.querySelector('[name="appointment_date"]').value =
+          d.appointment_date || '';
+        document.querySelector('[name="go_live_at"]').value =
+          json.go_live_at || '';
 
-        document.querySelector('[name="highcom"]').value = app.highcom || '';
-        document.querySelector('[name="webfile_id"]').value = app.webfile_id || '';
-        document.querySelector('[name="webfile_id_repeat"]').value = app.webfile_id_repeat || '';
-        document.querySelector('[name="ivac_id"]').value = app.ivac_id || '';
-        document.querySelector('[name="visa_type"]').value = app.visa_type || '';
-        document.querySelector('[name="family_count"]').value = app.family_count || '';
+        // APP FIELDS
+        // highcom dropdown
+        document.querySelector('[name="highcom"]').value =
+          app.highcom || '';
 
-        document.getElementById('familyJson').value = JSON.stringify(d.family || {}, null, 2);
+        // Webfile ID (single)
+        document.querySelector('[name="webfile_id"]').value =
+          app.webfile_id || app.webfile_id_repeat || '';
+
+        document.querySelector('[name="ivac_id"]').value =
+          app.ivac_id || '';
+        document.querySelector('[name="visa_type"]').value =
+          app.visa_type || '';
+        document.querySelector('[name="family_count"]').value =
+          app.family_count || '';
+
+        // Family JSON
+        document.getElementById('familyJson').value =
+          JSON.stringify(d.family || {}, null, 2);
 
         const status = document.getElementById('status');
         status.textContent = 'Loaded version ' + (json.version || 1);
@@ -210,14 +259,17 @@
         }
       }
 
+      const webfileId = form.webfile_id.value.trim();
+
       const body = {
         mobile: form.mobile.value.trim(),
         appointment_date: form.appointment_date.value.trim(),
         go_live_at: form.go_live_at.value.trim() || null,
         app: {
-          highcom: form.highcom.value.trim(),
-          webfile_id: form.webfile_id.value.trim(),
-          webfile_id_repeat: form.webfile_id_repeat.value.trim(),
+          highcom: form.highcom.value.trim(),          // dropdown থেকে 1–5
+          webfile_id: webfileId,
+          // UI-তে একবার ইনপুট, backend এ একই মান repeat:
+          webfile_id_repeat: webfileId,
           ivac_id: form.ivac_id.value.trim(),
           visa_type: form.visa_type.value.trim(),
           family_count: form.family_count.value.trim()
