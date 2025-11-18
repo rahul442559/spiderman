@@ -178,9 +178,16 @@
         </select>
       </label>
 
+      <!-- Family Count dropdown 0–4 -->
       <label>
-        family_count
-        <input name="family_count" placeholder="4" />
+        Family Count
+        <select name="family_count">
+          <option value="0">0</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+        </select>
       </label>
     </div>
 
@@ -256,14 +263,13 @@
         const missionSelect = document.querySelector('[name="highcom"]');
         const ivacSelect = document.querySelector('[name="ivac_id"]');
         const visaTypeSelect = document.querySelector('[name="visa_type"]');
+        const familyCountSelect = document.querySelector('[name="family_count"]');
 
-        // highcom (mission)
+        // Mission
         missionSelect.value = app.highcom || '';
 
-        // ivac_id (IVAC Center)
+        // IVAC Center
         ivacSelect.value = app.ivac_id || '';
-
-        // যদি ivac ফাঁকা থাকে কিন্তু mission set থাকে, তাহলে mapping থেকে সেট করে দাও
         if (!ivacSelect.value && missionSelect.value) {
           syncIvacFromMission(true);
         }
@@ -271,12 +277,16 @@
         // Visa Type
         visaTypeSelect.value = app.visa_type || '';
 
+        // Family Count
+        if (app.family_count !== undefined && app.family_count !== null && app.family_count !== '') {
+          familyCountSelect.value = String(app.family_count);
+        } else {
+          familyCountSelect.value = '0';
+        }
+
         // Webfile ID (single)
         document.querySelector('[name="webfile_id"]').value =
           app.webfile_id || app.webfile_id_repeat || '';
-
-        document.querySelector('[name="family_count"]').value =
-          app.family_count || '';
 
         // Family JSON
         document.getElementById('familyJson').value =
